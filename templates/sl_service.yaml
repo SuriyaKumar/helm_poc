@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "qs-sl.fullname" . }}
+  labels:
+    {{- include "qs-sl.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.serviceSL.type }}
+  ports:
+    - port: {{ .Values.serviceSL.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "qs-sl.selectorLabels" . | nindent 4 }}

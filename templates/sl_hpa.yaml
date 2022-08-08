@@ -1,0 +1,28 @@
+{{- if .Values.autoscalingSL.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "qs-sl.fullname" . }}
+  labels:
+    {{- include "qs-sl.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "qs-sl.fullname" . }}
+  minReplicas: {{ .Values.autoscalingSL.minReplicas }}
+  maxReplicas: {{ .Values.autoscalingSL.maxReplicas }}
+  metrics:
+    {{- if .Values.autoscalingSL.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.autoscalingSL.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.autoscalingSL.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: {{ .Values.autoscalingSL.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

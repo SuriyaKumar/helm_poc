@@ -1,0 +1,16 @@
+apiVersion: v1
+entries:
+  qs-ui:
+    - created: 2022-08-08T08:27:27.4194904+01:00
+      description: Deploys the Quantumics.AI UI application
+      home: https://quantumics.ai
+      name: qs-ui
+      version: 0.1.0
+
+  qs-sl:
+    - created: 2022-08-08T08:27:27.4194904+01:00
+      description: Deploys the Quantumics.AI Service Layer (API) application
+      home: https://quantumics.ai
+      name: qs-sl
+      version: 0.1.0
+generated: "2022-08-08T08:27:27.4194904+01:00"

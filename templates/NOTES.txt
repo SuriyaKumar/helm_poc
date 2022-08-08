@@ -1,0 +1,56 @@
+Quantumics.AI Helm Chart included below applications
+
+  * UI Application
+  * Service Layer Application
+
+### Get the application URL by running these commands for each application #####
+
+**** UI Application (UI) *****
+
+{{- if .Values.ingressUI.enabled }}
+{{- range $host := .Values.ingressUI.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingressUI.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.serviceUI.type }}
+  export UI_NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "qs-ui.fullname" . }})
+  export UI_NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$UI_NODE_IP:$UI_NODE_PORT
+{{- else if contains "LoadBalancer" .Values.serviceUI.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "qs-ui.fullname" . }}'
+  export UI_SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "qs-ui.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$UI_SERVICE_IP:{{ .Values.serviceUI.port }}
+{{- else if contains "ClusterIP" .Values.serviceUI.type }}
+  export UI_POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "qs-ui.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export UI_CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $UI_POD_NAME 8080:$UI_CONTAINER_PORT
+{{- end }}
+
+
+***** Service Layer (API) (SL) ******
+
+
+{{- if .Values.ingressSL.enabled }}
+{{- range $host := .Values.ingressSL.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.serviceSL.type }}
+  export SL_NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "qs-sl.fullname" . }})
+  export SL_NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$SL_NODE_IP:$SL_NODE_PORT
+{{- else if contains "LoadBalancer" .Values.serviceSL.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "qs-sl.fullname" . }}'
+  export SL_SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "qs-sl.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SL_SERVICE_IP:{{ .Values.serviceSL.port }}
+{{- else if contains "ClusterIP" .Values.serviceSL.type }}
+  export SL_POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "qs-sl.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export SL_CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8090 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $SL_POD_NAME 8090:$SL_CONTAINER_PORT
+{{- end }}

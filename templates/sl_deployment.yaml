@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "qs-sl.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "qs-sl.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscalingSL.enabled }}
+  replicas: {{ .Values.replicaCountSL }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "qs-sl.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotationsSL }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "qs-sl.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecretsSL }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "qs-sl.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContextSL | nindent 8 }}
+      containers:
+        - name: {{ .Values.nameOverrideSL }}
+          securityContext:
+            {{- toYaml .Values.securityContextSL | nindent 12 }}
+          image: "{{ .Values.imageSL.repository }}:{{ .Values.imageSL.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.imageSL.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8090
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resourcesSL | nindent 12 }}
+      {{- with .Values.nodeSelectorSL }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinitySL }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerationsSL }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
